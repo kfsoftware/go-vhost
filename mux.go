@@ -86,6 +86,27 @@ func (m *VhostMuxer) Listen(name string) (net.Listener, error) {
 	return vhost, nil
 }
 
+// Get fetches the listener for the given name.
+func (m *VhostMuxer) Get(name string) (*Listener, error) {
+	name = normalize(name)
+	l, ok := m.get(name)
+	if !ok {
+		return nil, NotFound{fmt.Errorf("vhost %q not found", name)}
+	}
+	return l, nil
+}
+
+// Get fetches the listener for the given name.
+func (m *VhostMuxer) Del(name string) error {
+	name = normalize(name)
+	l, _ := m.get(name)
+	if l != nil {
+		l.Close()
+	}
+	m.del(name)
+	return nil
+}
+
 // NextError returns the next error encountered while mux'ing a connection.
 // The net.Conn may be nil if the wrapped listener returned an error from Accept()
 func (m *VhostMuxer) NextError() (net.Conn, error) {
